@@ -1,0 +1,15 @@
+2025-06-14 02:10:37,557 - services.vehicle_detector - INFO - Model not found at data\models\yolov8x.pt, attempting to download...
+2025-06-14 02:10:40,517 - services.vehicle_detector - INFO - Model downloaded and saved to data\models\yolov8x.pt
+2025-06-14 02:10:40,524 - services.camera_manager - INFO - Camera manager started
+2025-06-14 02:10:40,555 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.37:5000
+2025-06-14 02:10:40,556 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-06-14 02:19:56,402 - services.camera_manager - INFO - Camera manager stopped
+2025-06-14 02:20:03,314 - services.camera_manager - INFO - Camera manager started
+2025-06-14 02:20:03,340 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.37:5000
+2025-06-14 02:20:03,341 - werkzeug - INFO - [33mPress CTRL+C to quit[0m

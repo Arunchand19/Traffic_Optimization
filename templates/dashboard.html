@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Analytics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .dashboard-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        .priority-alert {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .emergency-vehicle {
+            border-left: 4px solid #dc3545;
+        }
+        .traffic-flow {
+            height: 300px;
+        }
+        .vehicle-count {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .nav-link {
+            color: #495057;
+        }
+        .nav-link.active {
+            color: #0d6efd;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Traffic Optimization System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analytics">Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/settings">Settings</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h2>Real-time Traffic Dashboard</h2>
+                <p class="text-muted">Monitor traffic conditions and emergency vehicle movements</p>
+            </div>
+        </div>
+
+        <!-- Priority Vehicle Alerts -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card dashboard-card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">Priority Vehicle Alerts</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="priority-alerts" class="row">
+                            <!-- Priority alerts will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Traffic Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class='bx bx-car text-primary' style="font-size: 2rem;"></i>
+                        <h6 class="mt-2">Total Vehicles</h6>
+                        <div class="vehicle-count" id="total-vehicles">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class='bx bx-ambulance text-danger' style="font-size: 2rem;"></i>
+                        <h6 class="mt-2">Emergency Vehicles</h6>
+                        <div class="vehicle-count" id="emergency-vehicles">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class='bx bx-traffic text-warning' style="font-size: 2rem;"></i>
+                        <h6 class="mt-2">Traffic Density</h6>
+                        <div class="vehicle-count" id="traffic-density">0%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class='bx bx-alarm text-success' style="font-size: 2rem;"></i>
+                        <h6 class="mt-2">Response Time</h6>
+                        <div class="vehicle-count" id="response-time">0s</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Traffic Flow and Emergency Routes -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Traffic Flow Map</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="traffic-map" class="traffic-flow"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Active Emergency Routes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="emergency-routes">
+                            <!-- Emergency routes will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Update dashboard data
+        function updateDashboard() {
+            fetch('/api/dashboard/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('total-vehicles').textContent = data.total_vehicles;
+                    document.getElementById('emergency-vehicles').textContent = data.emergency_vehicles;
+                    document.getElementById('traffic-density').textContent = data.traffic_density + '%';
+                    document.getElementById('response-time').textContent = data.response_time + 's';
+                });
+        }
+
+        // Update priority alerts
+        function updatePriorityAlerts() {
+            fetch('/api/dashboard/priority-alerts')
+                .then(response => response.json())
+                .then(alerts => {
+                    const alertsContainer = document.getElementById('priority-alerts');
+                    alertsContainer.innerHTML = '';
+                    
+                    alerts.forEach(alert => {
+                        const alertElement = document.createElement('div');
+                        alertElement.className = 'col-md-4 mb-3';
+                        alertElement.innerHTML = `
+                            <div class="card emergency-vehicle">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class='bx ${getVehicleIcon(alert.type)}'></i>
+                                        ${alert.type}
+                                    </h6>
+                                    <p class="card-text">
+                                        Location: ${alert.location}<br>
+                                        Priority: ${alert.priority}<br>
+                                        Status: ${alert.status}
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                        alertsContainer.appendChild(alertElement);
+                    });
+                });
+        }
+
+        function getVehicleIcon(type) {
+            switch(type.toLowerCase()) {
+                case 'ambulance': return 'bx-ambulance';
+                case 'fire truck': return 'bx-fire';
+                case 'police': return 'bx-badge-check';
+                default: return 'bx-car';
+            }
+        }
+
+        // Initialize dashboard
+        updateDashboard();
+        updatePriorityAlerts();
+
+        // Update data periodically
+        setInterval(updateDashboard, 5000);
+        setInterval(updatePriorityAlerts, 3000);
+    </script>
+</body>
+</html> 

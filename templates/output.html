@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Traffic Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .signal-pulse {
+            animation: pulse 1.5s infinite;
+        }
+        .green-light {
+            background-color: #10B981 !important; /* Emerald green */
+            color: white;
+        }
+        .red-light {
+            background-color: #EF4444 !important; /* Red */
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen flex items-center justify-center p-4">
+    <div class="container mx-auto bg-white rounded-2xl shadow-2xl p-8 max-w-6xl">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">Traffic Management Dashboard</h1>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6" id="traffic-signals">
+            {% for result in results %}
+            <div class="bg-gray-50 rounded-lg p-6 shadow-md relative" data-road-index="{{ loop.index }}">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-semibold text-gray-700">Road {{ loop.index }}</h3>
+                    <div id="signal-{{ loop.index }}" 
+                         class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white font-bold signal-status">
+                        🚦
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        {% for vehicle, count in result.vehicle_counts.items() %}
+                            <div class="text-sm">
+                                <span class="font-medium text-gray-600">{{ vehicle.capitalize() }}:</span>
+                                <span class="font-bold text-blue-600">{{ count }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="border-t pt-3">
+                        <p class="text-sm">
+                            <strong>Total Vehicles:</strong> 
+                            <span class="text-blue-600">{{ result.total_count }}</span>
+                        </p>
+                    </div>
+                    
+                    <div class="mt-4 bg-blue-50 rounded-lg p-3 text-center">
+                        <div class="countdown text-2xl font-bold text-green-600" 
+                             data-estimated-time="{{ result.estimated_time }}">
+                            {{ result.estimated_time }}s
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Estimated Crossing Time</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-8">
+            <button id="start-traffic-management" 
+                    class="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 transition">
+                Start Traffic Management
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const signals = document.querySelectorAll('[id^="signal-"]');
+            const countdowns = document.querySelectorAll('.countdown');
+            const startButton = document.getElementById('start-traffic-management');
+
+            function resetSignals() {
+                signals.forEach(signal => {
+                    signal.className = 'w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white font-bold signal-status';
+                });
+                
+                // Reset all countdowns to original values
+                countdowns.forEach(countdown => {
+                    const originalTime = countdown.dataset.estimatedTime;
+                    countdown.textContent = `${originalTime}s`;
+                });
+            }
+
+            function manageTrafficSignals() {
+                resetSignals();
+                
+                let currentRoadIndex = 0;
+                
+                function processNextRoad() {
+                    // Reset all signals to red
+                    signals.forEach(signal => {
+                        signal.className = 'w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white font-bold signal-status';
+                    });
+                    
+                    // If we've gone through all roads, stop
+                    if (currentRoadIndex >= signals.length) {
+                        startButton.disabled = false;
+                        startButton.textContent = 'Start Traffic Management';
+                        return;
+                    }
+                    
+                    // Get current road's signal and countdown
+                    const currentSignal = signals[currentRoadIndex];
+                    const currentCountdown = countdowns[currentRoadIndex];
+                    
+                    // Set current signal to green
+                    currentSignal.className = 'w-12 h-12 rounded-full green-light signal-pulse flex items-center justify-center text-white font-bold signal-status';
+                    
+                    // Get estimated time
+                    const estimatedTime = parseInt(currentCountdown.dataset.estimatedTime);
+                    let remainingTime = estimatedTime;
+                    
+                    // Start countdown for current road
+                    const timer = setInterval(() => {
+                        // Decrement time
+                        remainingTime--;
+                        currentCountdown.textContent = `${remainingTime}s`;
+                        
+                        // When time reaches zero
+                        if (remainingTime <= 0) {
+                            clearInterval(timer);
+                            
+                            // Set current signal to red
+                            currentSignal.className = 'w-12 h-12 rounded-full red-light flex items-center justify-center text-white font-bold signal-status';
+                            
+                            // Move to next road
+                            currentRoadIndex++;
+                            
+                            // Process next road
+                            processNextRoad();
+                        }
+                    }, 1000);
+                }
+                
+                // Start processing roads
+                processNextRoad();
+            }
+
+            startButton.addEventListener('click', function() {
+                if (!this.disabled) {
+                    this.disabled = true;
+                    this.textContent = 'Traffic Management Started';
+                    manageTrafficSignals();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
