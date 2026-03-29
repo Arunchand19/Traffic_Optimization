@@ -5,6 +5,9 @@ A comprehensive traffic management system that includes:
 - Real-time accident detection and alerts
 - Multi-camera processing pipeline
 
+<img width="1219" height="665" alt="image" src="https://github.com/user-attachments/assets/120449c1-57b8-4e08-9ca4-b9850ea100a6" />
+
+
 ## Project Structure
 ```
 traffic_optimization/
